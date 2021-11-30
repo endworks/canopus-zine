@@ -5,7 +5,7 @@ import {
   CinemaResponse,
   CinemasResponse,
   Movie as CinemaMovie,
-  Session
+  Session,
 } from 'src/models/cinema.interface';
 import { ErrorResponse } from '../models/common.interface';
 import { cinemas } from 'src/data/cinemas';
@@ -22,7 +22,7 @@ export class CinemaService {
     const resp: CinemasResponse = Object.keys(cinemas).map((id) => {
       return {
         id,
-        ...cinemas[id]
+        ...cinemas[id],
       };
     });
     return resp;
@@ -32,19 +32,19 @@ export class CinemaService {
     if (cinemas[id]) {
       return {
         id,
-        ...cinemas[id]
+        ...cinemas[id],
       };
     } else {
       return {
         statusCode: 404,
         error: 'Not Found',
-        message: `Resource with ID '${id}' was not found`
+        message: `Resource with ID '${id}' was not found`,
       };
     }
   }
 
   public async getMovies(
-    id: string
+    id: string,
   ): Promise<CinemaMoviesResponse | ErrorResponse> {
     if (cinemas[id]) {
       try {
@@ -66,21 +66,21 @@ export class CinemaService {
         return {
           id,
           ...cinemas[id],
-          movies: movies
+          movies: movies,
         };
       } catch (exception) {
         this.logger.error(exception.message);
         return {
           statusCode: 500,
           error: 'Internal Server Error',
-          message: exception.message
+          message: exception.message,
         };
       }
     } else {
       return {
         statusCode: 404,
         error: 'Not Found',
-        message: `Resource with ID '${id}' was not found`
+        message: `Resource with ID '${id}' was not found`,
       };
     }
   }
@@ -88,7 +88,7 @@ export class CinemaService {
   async getMoviesPalafox(id: string): Promise<CinemaMovie[]> {
     try {
       const response = await lastValueFrom(
-        this.httpService.get(cinemas[id].source)
+        this.httpService.get(cinemas[id].source),
       );
       const $ = cheerio.load(response.data);
       return (await Promise.all(
@@ -98,7 +98,7 @@ export class CinemaService {
               .find('a')
               .attr('href')}`;
             const filmResponse = await lastValueFrom(
-              this.httpService.get(source)
+              this.httpService.get(source),
             );
             const $2 = cheerio.load(filmResponse.data);
             const id = /cartelera\/([\w-]+)/.exec(source)[1];
@@ -108,7 +108,7 @@ export class CinemaService {
             const synopsis = $2('.sinopsis p').first().text();
             const genres = $2('.datos span').eq(0).text().split(', ');
             const duration = parseInt(
-              $2('.datos span').eq(2).text().replace(/[^\d]/g, '')
+              $2('.datos span').eq(2).text().replace(/[^\d]/g, ''),
             );
             const director = $2('.datos span').eq(3).text();
             const actors = $2('.datos span').eq(4).text().split(', ');
@@ -116,12 +116,12 @@ export class CinemaService {
             const schedules = $2('.horarios ul li').eq(1).find('a');
             schedules.each((index) => {
               const inputMatch = /Sala (\d+) - ([\d:]+)/.exec(
-                schedules.eq(index).text()
+                schedules.eq(index).text(),
               );
               const session: Session = {
                 time: inputMatch[2],
                 room: inputMatch[1],
-                url: schedules.eq(index).attr('href')
+                url: schedules.eq(index).attr('href'),
               };
               sessions.push(session);
             });
@@ -136,11 +136,11 @@ export class CinemaService {
               genres,
               poster,
               trailer,
-              source
+              source,
             };
             return movie;
           })
-          .toArray()
+          .toArray(),
       )) as any;
     } catch (exception) {
       this.logger.error(exception.message);
@@ -151,7 +151,7 @@ export class CinemaService {
   async getMoviesCinesa(id: string): Promise<CinemaMovie[]> {
     try {
       const response = await lastValueFrom(
-        this.httpService.get(cinemas[id].source)
+        this.httpService.get(cinemas[id].source),
       );
       return response.data.cartelera[0].peliculas.map((item): CinemaMovie => {
         const sessions: Session[] = [];
@@ -163,7 +163,7 @@ export class CinemaService {
                   time: sesion.hora,
                   room: sala.sala,
                   type: sesion.tipo,
-                  url: sesion.ao
+                  url: sesion.ao,
                 });
               });
             });
@@ -179,7 +179,7 @@ export class CinemaService {
           actors: item.actores.split(', '),
           genres: item.genero.split(' - '),
           poster: item.cartel,
-          source: `https://www.cinesa.es/Peliculas/${item.url}`
+          source: `https://www.cinesa.es/Peliculas/${item.url}`,
         };
       });
     } catch (exception) {
