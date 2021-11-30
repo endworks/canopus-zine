@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import {
   CinemaMoviesResponse,
   CinemaResponse,
@@ -16,24 +17,34 @@ import * as cheerio from 'cheerio';
 export class CinemaService {
   private readonly logger = new Logger('CinemaService');
 
-  constructor(private httpService: HttpService) {}
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private httpService: HttpService,
+  ) {}
 
   public async getCinemas(): Promise<CinemasResponse | ErrorResponse> {
+    const cache: CinemasResponse = await this.cacheManager.get('cinema');
+    if (cache) return cache;
     const resp: CinemasResponse = Object.keys(cinemas).map((id) => {
       return {
         id,
         ...cinemas[id],
       };
     });
+    await this.cacheManager.set('cinema', resp, { ttl: 3600 });
     return resp;
   }
 
   public async getCinema(id: string): Promise<CinemaResponse | ErrorResponse> {
     if (cinemas[id]) {
-      return {
+      const cache: CinemaResponse = await this.cacheManager.get(`cinema/${id}`);
+      if (cache) return cache;
+      const resp = {
         id,
         ...cinemas[id],
       };
+      await this.cacheManager.set(`cinema/${id}`, resp, { ttl: 3600 });
+      return resp;
     } else {
       return {
         statusCode: 404,
@@ -47,6 +58,10 @@ export class CinemaService {
     id: string,
   ): Promise<CinemaMoviesResponse | ErrorResponse> {
     if (cinemas[id]) {
+      const cache: CinemaMoviesResponse = await this.cacheManager.get(
+        `cinema/${id}/movies`,
+      );
+      if (cache) return cache;
       try {
         let movies;
         switch (id) {
@@ -63,11 +78,13 @@ export class CinemaService {
             movies = [];
         }
 
-        return {
+        const resp = {
           id,
           ...cinemas[id],
           movies: movies,
         };
+        await this.cacheManager.set(`cinema/${id}/movies`, resp, { ttl: 3600 });
+        return resp;
       } catch (exception) {
         this.logger.error(exception.message);
         return {
