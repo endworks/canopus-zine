@@ -82,6 +82,7 @@ export class CinemaService {
           id,
           ...cinemas[id],
           movies: movies,
+          lastUpdated: new Date().toISOString(),
         };
         await this.cacheManager.set(`cinema/${id}/movies`, resp, { ttl: 3600 });
         return resp;

@@ -38,5 +38,6 @@ export interface CinemaResponse extends Cinema {
 export type CinemasResponse = Array<CinemaResponse>;
 
 export interface CinemaMoviesResponse extends CinemaResponse {
+  lastUpdated: string;
   movies: Movie[];
 }
