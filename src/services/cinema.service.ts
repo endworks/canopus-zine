@@ -11,6 +11,7 @@ import { ErrorResponse } from '../models/common.interface';
 import { cinemas } from 'src/data/cinemas';
 import { lastValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
+import { minutesToString } from 'src/utils';
 
 @Injectable()
 export class CinemaService {
@@ -157,18 +158,23 @@ export class CinemaService {
                 .text()
                 .replace(/[^\d]/g, ''),
             );
+            const durationReadable = minutesToString(duration);
             const director = details.eq(details.length - 2).text();
             const actors = details
               .eq(details.length - 1)
               .text()
               .split(', ');
             const sessions = [];
+            const parsedDate = $2('.horarios ul li').eq(0).text();
+            const splitDate = parsedDate.split('/');
+            const date = `${splitDate[2]}-${splitDate[1]}-${splitDate[0]}`;
             const schedules = $2('.horarios ul li').eq(1).find('a');
             schedules.each((index) => {
               const inputMatch = /Sala (\d+) - ([\d:]+)/.exec(
                 schedules.eq(index).text(),
               );
               const session: Session = {
+                date,
                 time: inputMatch[2],
                 room: inputMatch[1],
                 url: schedules.eq(index).attr('href'),
@@ -180,6 +186,7 @@ export class CinemaService {
               name,
               synopsis,
               duration,
+              durationReadable,
               sessions,
               director,
               actors,
@@ -210,6 +217,7 @@ export class CinemaService {
             tipo.salas.forEach((sala) => {
               sala.sesiones.forEach((sesion) => {
                 sessions.push({
+                  date: response.data.cartelera[0].dia,
                   time: sesion.hora,
                   room: sala.sala,
                   type: sesion.tipo,
@@ -224,6 +232,7 @@ export class CinemaService {
           id: item.url,
           name: item.titulo,
           duration: item.duracion,
+          durationReadable: minutesToString(item.duracion),
           sessions,
           director: item.directores,
           actors: item.actores.split(', '),

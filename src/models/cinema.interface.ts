@@ -20,6 +20,7 @@ export interface Movie {
   sessions: Session[];
   synopsis?: string;
   duration?: number;
+  durationReadable?: string;
   director?: string;
   genres?: string[];
   actors?: string[];
