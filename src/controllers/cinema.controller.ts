@@ -17,8 +17,8 @@ export class CinemaController {
     return this.cinemaService.getCinema(data.id);
   }
 
-  @MessagePattern('cinema/movies', Transport.TCP)
-  async movies(@Payload() data: IdPayload) {
-    return this.cinemaService.getMovies(data.id);
+  @MessagePattern('cinema/pro', Transport.TCP)
+  async cinemaPro(@Payload() data: IdPayload) {
+    return this.cinemaService.getCinemaPro(data.id);
   }
 }

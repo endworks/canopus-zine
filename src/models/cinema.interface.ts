@@ -1,9 +1,17 @@
-export interface Cinema {
+export interface BaseCinema {
   name: string;
   address?: string;
   location?: string;
   website?: string;
   source?: string;
+}
+
+export interface CinemaData {
+  [id: string]: BaseCinema;
+}
+
+export interface Cinema extends BaseCinema {
+  id: string;
 }
 
 export interface Movie {
@@ -21,23 +29,14 @@ export interface Movie {
 }
 
 export interface Session {
-  time: string;
   room: string;
+  time: string;
+  date?: string;
   type?: string;
   url?: string;
 }
 
-export interface CinemaData {
-  [id: string]: Cinema;
-}
-
-export interface CinemaResponse extends Cinema {
-  id: string;
-}
-
-export type CinemasResponse = Array<CinemaResponse>;
-
-export interface CinemaMoviesResponse extends CinemaResponse {
+export interface CinemaDetails extends Cinema {
   lastUpdated: string;
   movies: Movie[];
 }
