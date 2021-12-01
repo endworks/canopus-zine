@@ -60,7 +60,7 @@ export class CinemaService {
           lastUpdated: new Date().toISOString(),
           movies: movies,
         };
-        await this.cacheManager.set(`cinema/${id}/movies`, resp, { ttl: 3600 });
+        await this.cacheManager.set(`cinema/${id}`, resp, { ttl: 3600 });
         return resp;
       } catch (exception) {
         this.logger.error(exception.message);
@@ -83,7 +83,9 @@ export class CinemaService {
     id: string,
   ): Promise<CinemaDetails | ErrorResponse> {
     if (cinemas[id]) {
-      const cache: CinemaDetails = await this.cacheManager.get(`cinema/${id}`);
+      const cache: CinemaDetails = await this.cacheManager.get(
+        `cinema/${id}/pro`,
+      );
       if (cache) return cache;
       try {
         let movies;
@@ -107,7 +109,7 @@ export class CinemaService {
           lastUpdated: new Date().toISOString(),
           movies: movies,
         };
-        await this.cacheManager.set(`cinema/${id}/movies`, resp, { ttl: 3600 });
+        await this.cacheManager.set(`cinema/${id}/pro`, resp, { ttl: 3600 });
         return resp;
       } catch (exception) {
         this.logger.error(exception.message);
