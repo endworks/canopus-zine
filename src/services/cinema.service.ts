@@ -124,12 +124,19 @@ export class CinemaService {
             const poster = $2('.imagecache-cartelDetalle').attr('src');
             const trailer = $2('#urlvideo').text();
             const synopsis = $2('.sinopsis p').first().text();
-            const genres = $2('.datos span').eq(0).text().split(', ');
+            const details = $2('.datos span');
+            const genres = details.eq(0).text().split(', ');
             const duration = parseInt(
-              $2('.datos span').eq(2).text().replace(/[^\d]/g, ''),
+              details
+                .eq(details.length - 3)
+                .text()
+                .replace(/[^\d]/g, ''),
             );
-            const director = $2('.datos span').eq(3).text();
-            const actors = $2('.datos span').eq(4).text().split(', ');
+            const director = details.eq(details.length - 2).text();
+            const actors = details
+              .eq(details.length - 1)
+              .text()
+              .split(', ');
             const sessions = [];
             const schedules = $2('.horarios ul li').eq(1).find('a');
             schedules.each((index) => {
