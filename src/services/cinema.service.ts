@@ -180,7 +180,7 @@ export class CinemaService {
           const date = `${splitDate[2]}-${splitDate[1]}-${splitDate[0]}`;
           const schedules = $2('.horarios ul li').eq(1).find('a');
           schedules.each((index) => {
-            const inputMatch = /Sala (\d+) - ([\d:]+)(?: \(([\d|\w]+)\))?/.exec(
+            const inputMatch = /Sala (\d+) - (\d+:\d+) ?\(?(\w+)?\)?/.exec(
               schedules.eq(index).text(),
             );
             const session: Session = {
