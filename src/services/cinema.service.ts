@@ -5,7 +5,6 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
@@ -23,8 +22,6 @@ import { minutesToString } from 'src/utils';
 
 @Injectable()
 export class CinemaService {
-  private readonly logger = new Logger('CinemaService');
-
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private httpService: HttpService,
@@ -183,13 +180,14 @@ export class CinemaService {
           const date = `${splitDate[2]}-${splitDate[1]}-${splitDate[0]}`;
           const schedules = $2('.horarios ul li').eq(1).find('a');
           schedules.each((index) => {
-            const inputMatch = /Sala (\d+) - ([\d:]+)/.exec(
+            const inputMatch = /Sala (\d+) - ([\d:]+)(?: \(([\d|\w]+)\))?/.exec(
               schedules.eq(index).text(),
             );
             const session: Session = {
               date,
               time: inputMatch[2],
               room: inputMatch[1],
+              type: inputMatch[3],
               url: schedules.eq(index).attr('href'),
             };
             sessions.push(session);
