@@ -30,11 +30,15 @@ export interface Movie {
 }
 
 export interface MoviePro extends Movie {
+  originalName: string;
   writers: Crew[];
   theMovieDbId?: string;
   imDbId?: string;
   tagline: string | null;
   budget: number;
+  year: number;
+  releaseDate: string;
+  originalLanguage: string;
   popularity: number;
   voteAverage: number;
   voteCount: number;

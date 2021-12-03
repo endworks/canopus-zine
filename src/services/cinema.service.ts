@@ -118,7 +118,7 @@ export class CinemaService {
         const config = await this.theMovieDb.configuration();
         movies = await Promise.all(
           movies.map(async (movie): Promise<MoviePro> => {
-            const search = await this.theMovieDb.search(movie.id, 'es-ES');
+            const search = await this.theMovieDb.search(movie.name, 'es-ES');
             if (!search.results || !search.results.length) {
               return movie;
             }
@@ -138,21 +138,12 @@ export class CinemaService {
               'es-ES',
             );
 
-            return {
-              ...movie,
-              theMovieDbId: movieDB.id,
-              imDbId: movieDB.imdb_id,
-              name: movieDB.title,
-              tagline: movieDB.tagline,
-              poster: `${config.images.secure_base_url}w342${movieDB.poster_path}`,
-              synopsis: movieDB.overview,
-              trailer:
-                movieDBVideos.results.map(
-                  (video) => `http://www.youtube.com/watch?v=${video.key}`,
-                )[0] ||
-                movie.trailer ||
-                null,
-              director: movieDBCredits.crew.map((crew) => {
+            const trailer = movieDBVideos.results.map(
+              (video) => `http://www.youtube.com/watch?v=${video.key}`,
+            )[0];
+
+            const director = movieDBCredits.crew
+              .map((crew) => {
                 if (crew.job === 'Director')
                   return {
                     name: crew.name,
@@ -160,32 +151,52 @@ export class CinemaService {
                       ? `${config.images.secure_base_url}w185${crew.profile_path}`
                       : null,
                   };
-              })[0],
-              writers: movieDBCredits.crew
-                .map((crew) => {
-                  if (crew.job === 'Screenplay')
-                    return {
-                      name: crew.name,
-                      picture: crew.profile_path
-                        ? `${config.images.secure_base_url}w185${crew.profile_path}`
-                        : null,
-                    };
-                })
-                .filter((item) => item),
-              actors: movieDBCredits.cast
-                .map((cast) => {
-                  if (cast.known_for_department === 'Acting')
-                    return {
-                      name: cast.name,
-                      character: cast.character,
-                      picture: cast.profile_path
-                        ? `${config.images.secure_base_url}w185${cast.profile_path}`
-                        : null,
-                    };
-                })
-                .filter((item) => item),
+              })
+              .filter((item) => item)[0];
+
+            const writers = movieDBCredits.crew
+              .map((crew) => {
+                if (crew.job === 'Screenplay' || crew.job === 'Writer')
+                  return {
+                    name: crew.name,
+                    picture: crew.profile_path
+                      ? `${config.images.secure_base_url}w185${crew.profile_path}`
+                      : null,
+                  };
+              })
+              .filter((item) => item);
+
+            const actors = movieDBCredits.cast
+              .map((cast) => {
+                if (cast.known_for_department === 'Acting')
+                  return {
+                    name: cast.name,
+                    character: cast.character,
+                    picture: cast.profile_path
+                      ? `${config.images.secure_base_url}w185${cast.profile_path}`
+                      : null,
+                  };
+              })
+              .filter((item) => item);
+
+            return {
+              ...movie,
+              theMovieDbId: movieDB.id,
+              imDbId: movieDB.imdb_id,
+              name: movieDB.title,
+              originalName: movieDB.original_title,
+              tagline: movieDB.tagline,
+              poster: `${config.images.secure_base_url}w342${movieDB.poster_path}`,
+              synopsis: movieDB.overview,
+              trailer: trailer || movie.trailer || null,
+              director: director || null,
+              writers: writers.length > 0 ? writers : null,
+              actors,
               genres: movieDB.genres.map((genre) => genre.name),
               budget: movieDB.budget,
+              year: movieDB.release_date.slice(0, 4),
+              releaseDate: movieDB.release_date,
+              originalLanguage: movieDB.original_language,
               popularity: movieDB.popularity,
               voteAverage: movieDB.vote_average,
               voteCount: movieDB.vote_count,
