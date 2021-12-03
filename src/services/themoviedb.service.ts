@@ -5,7 +5,6 @@ import { Cache } from 'cache-manager';
 import {
   TheMovieDBConfiguration,
   TheMovieDBCredits,
-  TheMovieDBFind,
   TheMovieDBMovie,
   TheMovieDBSearch,
   TheMovieDBVideos,
@@ -37,8 +36,9 @@ export class TheMovieDBService {
   public async search(
     query: string,
     lang = 'en-US',
+    year = new Date().getFullYear(),
   ): Promise<TheMovieDBSearch> {
-    const url = `${API_URL}/search/movie?api_key=${process.env.THE_MOVIE_DB_API_KEY}&language=${lang}&query=${query}&page=1&include_adult=true`;
+    const url = `${API_URL}/search/movie?api_key=${process.env.THE_MOVIE_DB_API_KEY}&language=${lang}&query=${query}&page=1&include_adult=true&year=${year}`;
     const cache: TheMovieDBSearch = await this.cacheManager.get(
       `themoviedb/search/${query}`,
     );
@@ -46,23 +46,6 @@ export class TheMovieDBService {
     const response = await lastValueFrom(this.httpService.get(url));
     const resp = response.data;
     await this.cacheManager.set(`themoviedb/search/${query}`, resp, {
-      ttl: 43200,
-    });
-    return response.data;
-  }
-
-  public async find(
-    external_id: string,
-    lang = 'en-US',
-  ): Promise<TheMovieDBFind> {
-    const url = `${API_URL}/find/${external_id}?api_key=${process.env.THE_MOVIE_DB_API_KEY}&language=${lang}&external_source=imdb_id`;
-    const cache: TheMovieDBFind = await this.cacheManager.get(
-      `themoviedb/find/${external_id}`,
-    );
-    if (cache) return cache;
-    const response = await lastValueFrom(this.httpService.get(url));
-    const resp = response.data;
-    await this.cacheManager.set(`themoviedb/find/${external_id}`, resp, {
       ttl: 43200,
     });
     return response.data;

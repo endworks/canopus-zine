@@ -13,47 +13,26 @@ export interface TheMovieDBConfiguration {
 
 export interface TheMovieDBSearch {
   page: number;
-  results: {
-    poster_path: string | null;
-    adult: boolean;
-    overview: string;
-    release_date: string;
-    genre_ids: number[];
-    id: number;
-    original_title: string;
-    original_language: string;
-    title: string;
-    backdrop_path: string | null;
-    popularity: number;
-    vote_count: number;
-    video: boolean;
-    vote_average: number;
-  }[];
+  results: TheMovieDBSearchResult[];
   total_results: number;
   total_pages: number;
 }
 
-export interface TheMovieDBFind {
-  movie_results: {
-    adult: boolean;
-    backdrop_path: string | null;
-    genre_ids: number[];
-    id: number;
-    original_language: string;
-    original_title: string;
-    overview: string;
-    release_date: string;
-    poster_path: string | null;
-    popularity: number;
-    title: string;
-    video: boolean;
-    vote_average: number;
-    vote_count: number;
-  }[];
-  person_results: any[];
-  tv_results: any[];
-  tv_episode_results: any[];
-  tv_season_results: any[];
+export interface TheMovieDBSearchResult {
+  poster_path: string | null;
+  adult: boolean;
+  overview: string;
+  release_date: string;
+  genre_ids: number[];
+  id: number;
+  original_title: string;
+  original_language: string;
+  title: string;
+  backdrop_path: string | null;
+  popularity: number;
+  vote_count: number;
+  video: boolean;
+  vote_average: number;
 }
 
 export interface TheMovieDBMovie {

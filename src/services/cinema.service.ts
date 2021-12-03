@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
@@ -20,11 +21,18 @@ import { ErrorResponse } from '../models/common.interface';
 import { cinemas } from 'src/data/cinemas';
 import { lastValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
-import { minutesToString } from 'src/utils';
+import { minutesToString, sanitizeTitle } from 'src/utils';
 import { TheMovieDBService } from './themoviedb.service';
+import { match } from 'assert';
+import {
+  TheMovieDBMovie,
+  TheMovieDBSearchResult,
+} from 'src/models/themoviedb.interface';
 
 @Injectable()
 export class CinemaService {
+  private readonly logger = new Logger('CinemaService');
+
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private httpService: HttpService,
@@ -118,23 +126,90 @@ export class CinemaService {
         const config = await this.theMovieDb.configuration();
         movies = await Promise.all(
           movies.map(async (movie): Promise<MoviePro> => {
-            const search = await this.theMovieDb.search(movie.name, 'es-ES');
-            if (!search.results || !search.results.length) {
+            const search = await this.theMovieDb.search(
+              sanitizeTitle(movie.name),
+              'es-ES',
+            );
+            if (!search.results || search.results.length === 0) {
+              this.logger.error(
+                `'${sanitizeTitle(movie.name)}' not found on TheMovieDatabase`,
+              );
               return movie;
             }
 
-            const movieDB = await this.theMovieDb.movie(
-              search.results[0].id,
-              'es-ES',
+            let matches: TheMovieDBSearchResult[] = search.results.filter(
+              (result) =>
+                sanitizeTitle(movie.name) === sanitizeTitle(result.title),
             );
 
+            if (matches.length === 0) {
+              matches = search.results.filter((result) =>
+                sanitizeTitle(movie.name).includes(sanitizeTitle(result.title)),
+              );
+            }
+
+            if (matches.length === 0) {
+              matches = search.results.filter((result) =>
+                sanitizeTitle(result.title).includes(sanitizeTitle(movie.name)),
+              );
+            }
+
+            let movieDB: TheMovieDBMovie;
+
+            if (matches.length === 1) {
+              movieDB = await this.theMovieDb.movie(matches[0].id, 'es-ES');
+            } else if (matches.length === 0) {
+              this.logger.error(`'${movie.name}' got no results`);
+              search.results.forEach((result) => {
+                console.log(sanitizeTitle(movie.name));
+                console.log(sanitizeTitle(result.title));
+              });
+              return movie;
+            } else {
+              await Promise.all(
+                matches.map(async (match) => {
+                  await this.theMovieDb
+                    .movie(match.id, 'es-ES')
+                    .then((result) => {
+                      if (
+                        result.runtime > 0 &&
+                        movie.duration + 20 > result.runtime &&
+                        movie.duration - 20 < result.runtime
+                      ) {
+                        this.logger.log(
+                          `Should match '${movie.name}' duration: ${movie.duration} & ${result.runtime}`,
+                        );
+                        movieDB = result;
+                      }
+                    });
+                }),
+              );
+            }
+
+            if (!movieDB) {
+              this.logger.error(`'${movie.name}' not matched with any result`);
+              return movie;
+            }
+
+            // Check the duration to be sure that is the same movie
+            if (
+              movieDB.runtime > 0 &&
+              (movie.duration + 20 < movieDB.runtime ||
+                movie.duration - 20 > movieDB.runtime)
+            ) {
+              this.logger.error(
+                `'${movie.name}' and '${movieDB.title}' duration doesn't match: ${movie.duration} & ${movieDB.runtime}`,
+              );
+              return movie;
+            }
+
             const movieDBCredits = await this.theMovieDb.movieCredits(
-              search.results[0].id,
+              movieDB.id,
               'es-ES',
             );
 
             const movieDBVideos = await this.theMovieDb.movieVideos(
-              search.results[0].id,
+              movieDB.id,
               'es-ES',
             );
 
@@ -185,6 +260,8 @@ export class CinemaService {
               imDbId: movieDB.imdb_id,
               name: movieDB.title,
               originalName: movieDB.original_title,
+              duration: movieDB.runtime,
+              durationReadable: minutesToString(movieDB.runtime),
               tagline: movieDB.tagline,
               poster: `${config.images.secure_base_url}w342${movieDB.poster_path}`,
               synopsis: movieDB.overview,
