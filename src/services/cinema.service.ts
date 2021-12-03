@@ -12,7 +12,6 @@ import {
   Cinema,
   CinemaDetails,
   CinemaDetailsPro,
-  Crew,
   Movie,
   MoviePro,
   Session,
