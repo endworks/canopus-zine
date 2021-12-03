@@ -21,12 +21,23 @@ export interface Movie {
   synopsis?: string;
   duration?: number;
   durationReadable?: string;
-  director?: string;
+  director?: Crew;
   genres?: string[];
-  actors?: string[];
+  actors?: Actor[];
   poster?: string;
   trailer?: string;
   source?: string;
+}
+
+export interface MoviePro extends Movie {
+  writers: Crew[];
+  theMovieDbId?: string;
+  imDbId?: string;
+  tagline: string | null;
+  budget: number;
+  popularity: number;
+  voteAverage: number;
+  voteCount: number;
 }
 
 export interface Session {
@@ -37,7 +48,21 @@ export interface Session {
   url?: string;
 }
 
+export interface Crew {
+  name: string;
+  picture?: string;
+}
+
+export interface Actor extends Crew {
+  character?: string;
+}
+
 export interface CinemaDetails extends Cinema {
   lastUpdated: string;
   movies: Movie[];
+}
+
+export interface CinemaDetailsPro extends Cinema {
+  lastUpdated: string;
+  movies: MoviePro[];
 }

@@ -11,7 +11,10 @@ import { Cache } from 'cache-manager';
 import {
   Cinema,
   CinemaDetails,
+  CinemaDetailsPro,
+  Crew,
   Movie,
+  MoviePro,
   Session,
 } from 'src/models/cinema.interface';
 import { ErrorResponse } from '../models/common.interface';
@@ -19,12 +22,14 @@ import { cinemas } from 'src/data/cinemas';
 import { lastValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
 import { minutesToString } from 'src/utils';
+import { TheMovieDBService } from './themoviedb.service';
 
 @Injectable()
 export class CinemaService {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private httpService: HttpService,
+    private theMovieDb: TheMovieDBService,
   ) {}
 
   public async getCinemas(): Promise<Cinema[] | ErrorResponse> {
@@ -90,9 +95,9 @@ export class CinemaService {
 
   public async getCinemaPro(
     id: string,
-  ): Promise<CinemaDetails | ErrorResponse> {
+  ): Promise<CinemaDetailsPro | ErrorResponse> {
     if (cinemas[id]) {
-      const cache: CinemaDetails = await this.cacheManager.get(
+      const cache: CinemaDetailsPro = await this.cacheManager.get(
         `cinema/${id}/pro`,
       );
       if (cache) return cache;
@@ -111,6 +116,83 @@ export class CinemaService {
           default:
             movies = [];
         }
+        const config = await this.theMovieDb.configuration();
+        movies = await Promise.all(
+          movies.map(async (movie): Promise<MoviePro> => {
+            const search = await this.theMovieDb.search(movie.id, 'es-ES');
+            if (!search.results || !search.results.length) {
+              return movie;
+            }
+
+            const movieDB = await this.theMovieDb.movie(
+              search.results[0].id,
+              'es-ES',
+            );
+
+            const movieDBCredits = await this.theMovieDb.movieCredits(
+              search.results[0].id,
+              'es-ES',
+            );
+
+            const movieDBVideos = await this.theMovieDb.movieVideos(
+              search.results[0].id,
+              'es-ES',
+            );
+
+            return {
+              ...movie,
+              theMovieDbId: movieDB.id,
+              imDbId: movieDB.imdb_id,
+              name: movieDB.title,
+              tagline: movieDB.tagline,
+              poster: `${config.images.secure_base_url}w342${movieDB.poster_path}`,
+              synopsis: movieDB.overview,
+              trailer:
+                movieDBVideos.results.map(
+                  (video) => `http://www.youtube.com/watch?v=${video.key}`,
+                )[0] ||
+                movie.trailer ||
+                null,
+              director: movieDBCredits.crew.map((crew) => {
+                if (crew.job === 'Director')
+                  return {
+                    name: crew.name,
+                    picture: crew.profile_path
+                      ? `${config.images.secure_base_url}w185${crew.profile_path}`
+                      : null,
+                  };
+              })[0],
+              writers: movieDBCredits.crew
+                .map((crew) => {
+                  if (crew.job === 'Screenplay')
+                    return {
+                      name: crew.name,
+                      picture: crew.profile_path
+                        ? `${config.images.secure_base_url}w185${crew.profile_path}`
+                        : null,
+                    };
+                })
+                .filter((item) => item),
+              actors: movieDBCredits.cast
+                .map((cast) => {
+                  if (cast.known_for_department === 'Acting')
+                    return {
+                      name: cast.name,
+                      character: cast.character,
+                      picture: cast.profile_path
+                        ? `${config.images.secure_base_url}w185${cast.profile_path}`
+                        : null,
+                    };
+                })
+                .filter((item) => item),
+              genres: movieDB.genres.map((genre) => genre.name),
+              budget: movieDB.budget,
+              popularity: movieDB.popularity,
+              voteAverage: movieDB.vote_average,
+              voteCount: movieDB.vote_count,
+            };
+          }),
+        );
 
         const resp = {
           id,
@@ -180,7 +262,7 @@ export class CinemaService {
           const date = `${splitDate[2]}-${splitDate[1]}-${splitDate[0]}`;
           const schedules = $2('.horarios ul li').eq(1).find('a');
           schedules.each((index) => {
-            const inputMatch = /Sala (\d+) - (\d+:\d+) ?\(?(\w+)?\)?/.exec(
+            const inputMatch = /Sala (\d+) - (\d+:\d+)(?: \((\w+)\))?/.exec(
               schedules.eq(index).text(),
             );
             const session: Session = {
@@ -199,8 +281,14 @@ export class CinemaService {
             duration,
             durationReadable,
             sessions,
-            director,
-            actors,
+            director: {
+              name: director,
+            },
+            actors: actors.map((actor) => {
+              return {
+                name: actor,
+              };
+            }),
             genres,
             poster,
             trailer,
@@ -240,9 +328,15 @@ export class CinemaService {
         duration: item.duracion,
         durationReadable: minutesToString(item.duracion),
         sessions,
-        director: item.directores,
-        actors: item.actores.split(', '),
-        genres: item.genero.split(' - '),
+        director: {
+          name: item.directores,
+        },
+        actors: (item.actores || '').split(', ').map((actor) => {
+          return {
+            name: actor,
+          };
+        }),
+        genres: (item.genero || '').split(' - '),
         poster: item.cartel,
         source: `https://www.cinesa.es/Peliculas/${item.url}`,
       };
