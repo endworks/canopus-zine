@@ -23,7 +23,6 @@ import { lastValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
 import { minutesToString, sanitizeTitle } from 'src/utils';
 import { TheMovieDBService } from './themoviedb.service';
-import { match } from 'assert';
 import {
   TheMovieDBMovie,
   TheMovieDBSearchResult,
