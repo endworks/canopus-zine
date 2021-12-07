@@ -9,6 +9,7 @@ import {
   TheMovieDBSearch,
   TheMovieDBVideos,
 } from 'src/models/themoviedb.interface';
+import { ttlCache } from 'src/utils';
 
 const API_URL = 'https://api.themoviedb.org/3';
 
@@ -28,7 +29,7 @@ export class TheMovieDBService {
     const response = await lastValueFrom(this.httpService.get(url));
     const resp = response.data;
     await this.cacheManager.set(`themoviedb/configuration`, resp, {
-      ttl: 43200,
+      ttl: ttlCache,
     });
     return response.data;
   }
@@ -46,7 +47,7 @@ export class TheMovieDBService {
     const response = await lastValueFrom(this.httpService.get(url));
     const resp = response.data;
     await this.cacheManager.set(`themoviedb/search/${query}`, resp, {
-      ttl: 43200,
+      ttl: ttlCache,
     });
     return response.data;
   }
@@ -59,7 +60,9 @@ export class TheMovieDBService {
     if (cache) return cache;
     const response = await lastValueFrom(this.httpService.get(url));
     const resp = response.data;
-    await this.cacheManager.set(`themoviedb/movie/${id}`, resp, { ttl: 43200 });
+    await this.cacheManager.set(`themoviedb/movie/${id}`, resp, {
+      ttl: ttlCache,
+    });
     return response.data;
   }
 
@@ -75,7 +78,7 @@ export class TheMovieDBService {
     const response = await lastValueFrom(this.httpService.get(url));
     const resp = response.data;
     await this.cacheManager.set(`themoviedb/movie/${id}/credits`, resp, {
-      ttl: 43200,
+      ttl: ttlCache,
     });
     return response.data;
   }
@@ -92,7 +95,7 @@ export class TheMovieDBService {
     const response = await lastValueFrom(this.httpService.get(url));
     const resp = response.data;
     await this.cacheManager.set(`themoviedb/movie/${id}/videos`, resp, {
-      ttl: 43200,
+      ttl: ttlCache,
     });
     return response.data;
   }

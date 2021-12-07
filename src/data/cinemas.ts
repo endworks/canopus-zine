@@ -1,19 +1,19 @@
 import { CinemaData } from 'src/models/cinema.interface';
 
 export const cinemas: CinemaData = {
-  palafox: {
-    name: 'Cines Palafox',
-    address: 'Paseo de la Independencia, 12, 50004 Zaragoza',
-    location: 'Zaragoza',
-    website: 'https://www.cinespalafox.com/cartelera-cines-palafox.html',
-    source: 'https://www.cinespalafox.com/cartelera-cines-palafox.html',
-  },
   aragonia: {
     name: 'Aragonia',
     address: 'Avenida de Juan Pablo II, 43, 50009 Zaragoza',
     location: 'Zaragoza',
     website: 'https://www.cinespalafox.com/cartelera-cines-aragonia.html',
     source: 'https://www.cinespalafox.com/cartelera-cines-aragonia.html',
+  },
+  palafox: {
+    name: 'Cines Palafox',
+    address: 'Paseo de la Independencia, 12, 50004 Zaragoza',
+    location: 'Zaragoza',
+    website: 'https://www.cinespalafox.com/cartelera-cines-palafox.html',
+    source: 'https://www.cinespalafox.com/cartelera-cines-palafox.html',
   },
   cervantes: {
     name: 'Sala Cervantes',

@@ -17,3 +17,6 @@ export const sanitizeTitle = (title: string): string => {
     .replace(/ñ/gm, 'n')
     .trim();
 };
+
+export const ttlCache = 21600; // 12 hours
+export const ttlCacheDaily = 43200; // 1 day
