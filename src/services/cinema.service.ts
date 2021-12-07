@@ -359,7 +359,7 @@ export class CinemaService {
           const date = `${splitDate[2]}-${splitDate[1]}-${splitDate[0]}`;
           const schedules = $2('.horarios ul li').eq(1).find('a');
           schedules.each((index) => {
-            const inputMatch = /Sala (\d+) - (\d+:\d+)(?: \((\w+)\))?/.exec(
+            const inputMatch = /Sala (\d+) - (\d+:\d+)(?: \((\w.+)\))?/.exec(
               schedules.eq(index).text(),
             );
             const session: Session = {
@@ -398,6 +398,7 @@ export class CinemaService {
   }
 
   async getMoviesCinesa(id: string): Promise<Movie[]> {
+    const cinema = id === 'venecia' ? 'puerto-venecia' : id;
     const response = await lastValueFrom(
       this.httpService.get(cinemas[id].source),
     );
@@ -410,8 +411,8 @@ export class CinemaService {
               sessions.push({
                 date: response.data.cartelera[0].dia,
                 time: sesion.hora,
-                room: sala.sala,
-                type: sesion.tipo,
+                room: sala.salanum,
+                type: sala.sala !== sala.salanum ? sala.sala : null,
                 url: sesion.ao,
               });
             });
@@ -435,7 +436,7 @@ export class CinemaService {
         }),
         genres: (item.genero || '').split(' - '),
         poster: item.cartel,
-        source: `https://www.cinesa.es/Peliculas/${item.url}`,
+        source: `https://www.cinesa.es/Peliculas/${item.url}/${cinema}`,
       };
     });
   }
