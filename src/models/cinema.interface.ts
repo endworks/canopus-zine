@@ -36,6 +36,7 @@ export interface MoviePro extends Movie {
   imDbId?: string;
   tagline: string | null;
   budget: number;
+  revenue: number;
   year: number;
   releaseDate: string;
   originalLanguage: string;

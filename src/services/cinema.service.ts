@@ -279,6 +279,7 @@ export class CinemaService {
               actors: actors.length > 0 ? actors : null,
               genres: movieDB.genres.map((genre) => genre.name),
               budget: movieDB.budget,
+              revenue: movieDB.revenue,
               year: movieDB.release_date.slice(0, 4),
               releaseDate: movieDB.release_date,
               originalLanguage: movieDB.original_language,
