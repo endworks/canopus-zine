@@ -18,5 +18,9 @@ export const sanitizeTitle = (title: string): string => {
     .trim();
 };
 
+export const generateSlug = (title: string): string => {
+  return sanitizeTitle(title).replace(/\s/gm, '-');
+};
+
 export const ttlCache = 21600; // 12 hours
 export const ttlCacheDaily = 43200; // 1 day

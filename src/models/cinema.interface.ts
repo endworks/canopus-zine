@@ -46,8 +46,8 @@ export interface MoviePro extends Movie {
 }
 
 export interface Session {
-  room: string;
   time: string;
+  room?: string;
   date?: string;
   type?: string;
   url?: string;

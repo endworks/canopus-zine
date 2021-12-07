@@ -26,6 +26,7 @@ import {
   sanitizeTitle,
   ttlCacheDaily,
   ttlCache,
+  generateSlug,
 } from 'src/utils';
 import { TheMovieDBService } from './themoviedb.service';
 import {
@@ -71,6 +72,9 @@ export class CinemaService {
           case 'grancasa':
           case 'venecia':
             movies = await this.getMoviesCinesa(id);
+            break;
+          case 'cinemundo':
+            movies = await this.getMoviesCineapolis(id);
             break;
           default:
             movies = [];
@@ -125,6 +129,9 @@ export class CinemaService {
           case 'grancasa':
           case 'venecia':
             movies = await this.getMoviesCinesa(id);
+            break;
+          case 'cinemundo':
+            movies = await this.getMoviesCineapolis(id);
             break;
           default:
             movies = [];
@@ -335,8 +342,8 @@ export class CinemaService {
             this.httpService.get(source),
           );
           const $2 = cheerio.load(filmResponse.data);
-          const id = /cartelera\/([\w-]+)/.exec(source)[1];
           const name = $2('h1').text();
+          const id = generateSlug(name);
           const poster = $2('.imagecache-cartelDetalle').attr('src');
           const trailer = $2('#urlvideo').text();
           const synopsis = $2('.sinopsis p').first().text();
@@ -440,5 +447,84 @@ export class CinemaService {
         source: `https://www.cinesa.es/Peliculas/${item.url}/${cinema}`,
       };
     });
+  }
+
+  async getMoviesCineapolis(id: string): Promise<Movie[]> {
+    const response = await lastValueFrom(
+      this.httpService.get(cinemas[id].source),
+    );
+    const $ = cheerio.load(response.data);
+    return (await Promise.all(
+      $('.portfolio-item')
+        .map(async (_, value) => {
+          const source = `https://cineapolis.es/${$(value)
+            .find('a')
+            .attr('href')}`;
+          const filmResponse = await lastValueFrom(
+            this.httpService.get(source),
+          );
+          const $2 = cheerio.load(filmResponse.data);
+          const name = $2('.h3 [itemprop=name]').text();
+          const id = generateSlug(name);
+          const poster = $2('.card-img-top').attr('src');
+          const trailer = $2('.embed-responsive-item').attr('src');
+          const synopsis = $2('[itemprop=description]').text();
+          const genres = $2('[itemprop=genre]').text().split(', ');
+          const duration = parseInt(
+            $2('[itemprop=duration]').text().split(' ')[0],
+          );
+          const durationReadable = minutesToString(duration);
+          const director = $2('[itemprop=director]').text();
+          const actors = $2('[itemprop=actor]').text().split(', ');
+          const sessions = [];
+          const tickets = $2(
+            '.row [itemtype=http://schema.org/doorTime]',
+          ).first();
+          const parsedDate = tickets
+            .find('[itemprop=DateTime]')
+            .first()
+            .text()
+            .replace(/\s/gm, '');
+          const type = tickets
+            .find('[itemprop=videoformat]')
+            .first()
+            .text()
+            .replace(/\s/gm, '');
+          const splitDate = parsedDate.split('/');
+          const date = `${splitDate[2]}-${splitDate[1]}-${splitDate[0]}`;
+          const schedules = tickets.find('[itemprop=DateTime] a');
+          schedules.each((index) => {
+            const session: Session = {
+              date,
+              time: schedules.eq(index).text().trim(),
+              type,
+              url: `https://cineapolis.es${schedules.eq(index).attr('href')}`,
+            };
+            sessions.push(session);
+          });
+          const movie: Movie = {
+            id,
+            name,
+            synopsis,
+            duration,
+            durationReadable,
+            sessions,
+            director: {
+              name: director,
+            },
+            actors: actors.map((actor) => {
+              return {
+                name: actor.replace(/\s/gm, ''),
+              };
+            }),
+            genres,
+            poster,
+            trailer,
+            source,
+          };
+          return movie;
+        })
+        .toArray(),
+    )) as any;
   }
 }

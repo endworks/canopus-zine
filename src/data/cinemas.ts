@@ -36,4 +36,11 @@ export const cinemas: CinemaData = {
     website: 'https://www.cinesa.es/cines/puerto-venecia',
     source: 'https://www.cinesa.es/cines/horarios/1100/50011',
   },
+  cinemundo: {
+    name: 'Cinemundo',
+    address: 'Calle Agustín Viñuales Pardo, 4, 22004 Huesca',
+    location: 'Huesca',
+    website: 'https://cineapolis.es/Cine/40',
+    source: 'https://cineapolis.es/Cine/40',
+  },
 };
