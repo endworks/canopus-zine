@@ -14,7 +14,7 @@ export interface Cinema extends BaseCinema {
   id: string;
 }
 
-export interface Movie {
+export interface MovieBasic {
   id: string;
   name: string;
   sessions: Session[];
@@ -29,7 +29,7 @@ export interface Movie {
   source?: string;
 }
 
-export interface MoviePro extends Movie {
+export interface Movie extends MovieBasic {
   originalName: string;
   writers: Crew[];
   theMovieDbId?: string;
@@ -67,7 +67,7 @@ export interface CinemaDetails extends Cinema {
   movies: Movie[];
 }
 
-export interface CinemaDetailsPro extends Cinema {
+export interface CinemaDetailsBasic extends Cinema {
   lastUpdated: string;
-  movies: MoviePro[];
+  movies: MovieBasic[];
 }

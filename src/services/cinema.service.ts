@@ -11,10 +11,10 @@ import {
 import { Cache } from 'cache-manager';
 import {
   Cinema,
+  CinemaDetailsBasic,
   CinemaDetails,
-  CinemaDetailsPro,
+  MovieBasic,
   Movie,
-  MoviePro,
   Session,
 } from 'src/models/cinema.interface';
 import { ErrorResponse } from '../models/common.interface';
@@ -57,13 +57,25 @@ export class CinemaService {
     return resp;
   }
 
-  public async getCinema(id: string): Promise<CinemaDetails | ErrorResponse> {
+  public async getCinemaBasic(
+    id: string,
+  ): Promise<CinemaDetailsBasic | ErrorResponse> {
     if (cinemas[id]) {
-      const cache: CinemaDetails = await this.cacheManager.get(`cinema/${id}`);
+      const cache: CinemaDetailsBasic = await this.cacheManager.get(
+        `cinema/${id}/basic`,
+      );
       if (cache) return cache;
       try {
         let movies;
         switch (id) {
+          case 'maravillas':
+          case 'lys':
+          case 'abcpark':
+          case 'abcgranturia':
+          case 'abcelsaler':
+          case 'abcgandia':
+            movies = await this.getMoviesReservaEntradas(id);
+            break;
           case 'palafox':
           case 'aragonia':
           case 'cervantes':
@@ -86,7 +98,7 @@ export class CinemaService {
           lastUpdated: new Date().toISOString(),
           movies: movies,
         };
-        await this.cacheManager.set(`cinema/${id}`, resp, {
+        await this.cacheManager.set(`cinema/${id}/basic`, resp, {
           ttl: ttlCache,
         });
         return resp;
@@ -110,17 +122,21 @@ export class CinemaService {
     }
   }
 
-  public async getCinemaPro(
-    id: string,
-  ): Promise<CinemaDetailsPro | ErrorResponse> {
+  public async getCinema(id: string): Promise<CinemaDetails | ErrorResponse> {
     if (cinemas[id]) {
-      const cache: CinemaDetailsPro = await this.cacheManager.get(
-        `cinema/${id}/pro`,
-      );
+      const cache: CinemaDetails = await this.cacheManager.get(`cinema/${id}`);
       if (cache) return cache;
       try {
         let movies;
         switch (id) {
+          case 'maravillas':
+          case 'lys':
+          case 'abcpark':
+          case 'abcgranturia':
+          case 'abcelsaler':
+          case 'abcgandia':
+            movies = await this.getMoviesReservaEntradas(id);
+            break;
           case 'palafox':
           case 'aragonia':
           case 'cervantes':
@@ -138,7 +154,7 @@ export class CinemaService {
         }
         const config = await this.theMovieDb.configuration();
         movies = await Promise.all(
-          movies.map(async (movie): Promise<MoviePro> => {
+          movies.map(async (movie): Promise<Movie> => {
             const search = await this.theMovieDb.search(
               sanitizeTitle(movie.name),
               'es-ES',
@@ -303,7 +319,7 @@ export class CinemaService {
           lastUpdated: new Date().toISOString(),
           movies: movies,
         };
-        await this.cacheManager.set(`cinema/${id}/pro`, resp, {
+        await this.cacheManager.set(`cinema/${id}`, resp, {
           ttl: ttlCache,
         });
         return resp;
@@ -327,7 +343,61 @@ export class CinemaService {
     }
   }
 
-  async getMoviesPalafox(id: string): Promise<Movie[]> {
+  async getMoviesReservaEntradas(id: string): Promise<MovieBasic[]> {
+    const response = await lastValueFrom(
+      this.httpService.get(cinemas[id].source),
+    );
+    const $ = cheerio.load(response.data);
+    return (await Promise.all(
+      $('.movie.row')
+        .map(async (_, value) => {
+          const source = $(value).find('a').attr('href');
+          const filmResponse = await lastValueFrom(
+            this.httpService.get(source),
+          );
+          const $2 = cheerio.load(filmResponse.data);
+          const name = $2('h2 strong').first().text();
+          const id = generateSlug(name);
+          const sessions = [];
+          const poster = $2('.media-object').attr('src').split('?')[0];
+          const trailer = $2('#trailer iframe').attr('src');
+          const synopsis = $2('#sinopsis_info span')
+            .text()
+            .replace(/\n/, '')
+            .trim();
+          const duration = parseInt(
+            $2('.member-descriptionX > p > strong').text().split(' ')[0],
+          );
+          const durationReadable = minutesToString(duration);
+          const tickets = $2('#1.tab-pane > div');
+          const type = tickets.find('p').first().text().replace(/\s/gm, '');
+          const schedules = tickets.find('.sessions-list a');
+          schedules.each((index) => {
+            const session: Session = {
+              time: schedules.eq(index).text().trim(),
+              type,
+              url: schedules.eq(index).attr('href'),
+            };
+            sessions.push(session);
+          });
+          const movie: MovieBasic = {
+            id,
+            name,
+            synopsis,
+            duration,
+            durationReadable,
+            sessions,
+            poster,
+            trailer,
+            source,
+          };
+          return movie;
+        })
+        .toArray(),
+    )) as any;
+  }
+
+  async getMoviesPalafox(id: string): Promise<MovieBasic[]> {
     const response = await lastValueFrom(
       this.httpService.get(cinemas[id].source),
     );
@@ -379,7 +449,7 @@ export class CinemaService {
             };
             sessions.push(session);
           });
-          const movie: Movie = {
+          const movie: MovieBasic = {
             id,
             name,
             synopsis,
@@ -405,12 +475,12 @@ export class CinemaService {
     )) as any;
   }
 
-  async getMoviesCinesa(id: string): Promise<Movie[]> {
+  async getMoviesCinesa(id: string): Promise<MovieBasic[]> {
     const cinema = id === 'venecia' ? 'puerto-venecia' : id;
     const response = await lastValueFrom(
       this.httpService.get(cinemas[id].source),
     );
-    return response.data.cartelera[0].peliculas.map((item): Movie => {
+    return response.data.cartelera[0].peliculas.map((item): MovieBasic => {
       const sessions: Session[] = [];
       item.cines.forEach((cine) => {
         cine.tipos.forEach((tipo) => {
@@ -449,7 +519,7 @@ export class CinemaService {
     });
   }
 
-  async getMoviesCineapolis(id: string): Promise<Movie[]> {
+  async getMoviesCineapolis(id: string): Promise<MovieBasic[]> {
     const response = await lastValueFrom(
       this.httpService.get(cinemas[id].source),
     );
@@ -502,7 +572,7 @@ export class CinemaService {
             };
             sessions.push(session);
           });
-          const movie: Movie = {
+          const movie: MovieBasic = {
             id,
             name,
             synopsis,

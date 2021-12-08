@@ -25,9 +25,9 @@ export class CinemaController {
     });
   }
 
-  @MessagePattern('cinema/pro', Transport.TCP)
-  async cinemaPro(@Payload() data: IdPayload) {
-    return this.cinemaService.getCinemaPro(data.id).catch((ex) => {
+  @MessagePattern('cinema/basic', Transport.TCP)
+  async cinemaBasic(@Payload() data: IdPayload) {
+    return this.cinemaService.getCinemaBasic(data.id).catch((ex) => {
       this.logger.error(ex.message);
       return ex.response;
     });
