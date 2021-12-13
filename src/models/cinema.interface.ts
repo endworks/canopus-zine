@@ -32,7 +32,7 @@ export interface MovieBasic {
 export interface Movie extends MovieBasic {
   originalName: string;
   writers: Crew[];
-  theMovieDbId?: string;
+  theMovieDbId?: number;
   imDbId?: string;
   tagline: string | null;
   budget: number;

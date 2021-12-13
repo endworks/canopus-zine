@@ -127,31 +127,8 @@ export class CinemaService {
       const cache: CinemaDetails = await this.cacheManager.get(`cinema/${id}`);
       if (cache) return cache;
       try {
-        let movies;
-        switch (id) {
-          case 'maravillas':
-          case 'lys':
-          case 'abcpark':
-          case 'abcgranturia':
-          case 'abcelsaler':
-          case 'abcgandia':
-            movies = await this.getMoviesReservaEntradas(id);
-            break;
-          case 'palafox':
-          case 'aragonia':
-          case 'cervantes':
-            movies = await this.getMoviesPalafox(id);
-            break;
-          case 'grancasa':
-          case 'venecia':
-            movies = await this.getMoviesCinesa(id);
-            break;
-          case 'cinemundo':
-            movies = await this.getMoviesCineapolis(id);
-            break;
-          default:
-            movies = [];
-        }
+        const cinema = await this.getCinemaBasic(id);
+        let movies = 'movies' in cinema ? (cinema.movies as Movie[]) : [];
         const config = await this.theMovieDb.configuration();
         movies = await Promise.all(
           movies.map(async (movie): Promise<Movie> => {
@@ -189,10 +166,6 @@ export class CinemaService {
               movieDB = await this.theMovieDb.movie(matches[0].id, 'es-ES');
             } else if (matches.length === 0) {
               this.logger.error(`'${movie.name}' got no results`);
-              search.results.forEach((result) => {
-                console.log(sanitizeTitle(movie.name));
-                console.log(sanitizeTitle(result.title));
-              });
               return movie;
             } else {
               await Promise.all(
@@ -206,7 +179,7 @@ export class CinemaService {
                         movie.duration - 20 < result.runtime
                       ) {
                         this.logger.log(
-                          `Should match '${movie.name}' duration: ${movie.duration} & ${result.runtime}`,
+                          `Should match '${movie.name}' duration: ${movie.duration} ≈ ${result.runtime}`,
                         );
                         movieDB = result;
                       }
@@ -227,7 +200,7 @@ export class CinemaService {
                 movie.duration - 20 > movieDB.runtime)
             ) {
               this.logger.error(
-                `'${movie.name}' and '${movieDB.title}' duration doesn't match: ${movie.duration} & ${movieDB.runtime}`,
+                `'${movie.name}' and '${movieDB.title}' duration doesn't match: ${movie.duration} != ${movieDB.runtime}`,
               );
               return movie;
             }
@@ -303,7 +276,7 @@ export class CinemaService {
               genres: movieDB.genres.map((genre) => genre.name),
               budget: movieDB.budget,
               revenue: movieDB.revenue,
-              year: movieDB.release_date.slice(0, 4),
+              year: parseInt(movieDB.release_date.slice(0, 4)),
               releaseDate: movieDB.release_date,
               originalLanguage: movieDB.original_language,
               popularity: movieDB.popularity,
@@ -339,6 +312,30 @@ export class CinemaService {
           message: `Resource with ID '${id}' was not found`,
         },
         `Resource with ID '${id}' was not found`,
+      );
+    }
+  }
+
+  async updateAll(): Promise<ErrorResponse> {
+    try {
+      const cinemas = await this.getCinemas();
+      if ('statusCode' in cinemas) return;
+      await Promise.all(
+        cinemas.map(async (cinema) => {
+          await this.getCinema(cinema.id);
+        }),
+      );
+      return {
+        statusCode: HttpStatus.OK,
+        message: `All movies are updated`,
+      };
+    } catch (exception) {
+      throw new InternalServerErrorException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: exception.message,
+        },
+        exception.message,
       );
     }
   }

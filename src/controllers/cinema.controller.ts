@@ -32,4 +32,12 @@ export class CinemaController {
       return ex.response;
     });
   }
+
+  @MessagePattern('updateAll', Transport.TCP)
+  async updateAll() {
+    return this.cinemaService.updateAll().catch((ex) => {
+      this.logger.error(ex.message);
+      return ex.response;
+    });
+  }
 }
