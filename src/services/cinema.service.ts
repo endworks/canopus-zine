@@ -359,12 +359,18 @@ export class CinemaService {
           if (name.toLowerCase().includes('cine club lys')) {
             specialEdition = 'Cine Club Lys';
             name = name.replace(/CINE CLUB LYS :/, '');
-          } else if (name.toLowerCase().includes('proyecto piridiana')) {
+          } else if (name.toLowerCase().includes('proyecto viridiana')) {
             specialEdition = 'Proyecto Viridiana';
             name = name.replace(/PROYECTO VIRIDIANA: /, '');
           } else if (name.toLowerCase().includes('club rosebud')) {
             specialEdition = 'Club Rosebud';
             name = name.replace(/ - CLUB ROSEBUD/, '');
+          } else if (name.toLowerCase().includes('4K')) {
+            specialEdition = '4K';
+            name = name.replace(/4K/, '');
+          } else if (/(\d+ aniversario)/gim.test(name)) {
+            specialEdition = /(\d+ aniversario)/gim.exec(name)[0];
+            name = name.replace(/\(\d+ aniversario\)/gim, '');
           }
           const id = generateSlug(name);
           const sessions = [];
@@ -379,7 +385,11 @@ export class CinemaService {
           );
           const durationReadable = minutesToString(duration);
           const tickets = $2('#1.tab-pane > div');
-          const type = tickets.find('p').first().text().replace(/\s/gm, '');
+          const type = tickets
+            .find('p')
+            .first()
+            .text()
+            .replace(/[\s()]/gm, '');
           const schedules = tickets.find('.sessions-list a');
           schedules.each((index) => {
             const session: Session = {

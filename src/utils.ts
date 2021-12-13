@@ -8,7 +8,6 @@ export const sanitizeTitle = (title: string): string => {
   return title
     .toLowerCase()
     .replace(/[:,.]/gm, '')
-    .replace(/4k/gm, '')
     .replace(/á/gm, 'a')
     .replace(/é/gm, 'e')
     .replace(/í/gm, 'i')
