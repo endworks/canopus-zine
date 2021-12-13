@@ -68,6 +68,7 @@ export class CinemaService {
       try {
         let movies;
         switch (id) {
+          case 'victoria':
           case 'maravillas':
           case 'lys':
           case 'abcpark':
@@ -353,7 +354,18 @@ export class CinemaService {
             this.httpService.get(source),
           );
           const $2 = cheerio.load(filmResponse.data);
-          const name = $2('h2 strong').first().text();
+          let name = $2('h2 strong').first().text();
+          let specialEdition = null;
+          if (name.toLowerCase().includes('cine club lys')) {
+            specialEdition = 'Cine Club Lys';
+            name = name.replace(/CINE CLUB LYS :/, '');
+          } else if (name.toLowerCase().includes('proyecto piridiana')) {
+            specialEdition = 'Proyecto Viridiana';
+            name = name.replace(/PROYECTO VIRIDIANA: /, '');
+          } else if (name.toLowerCase().includes('club rosebud')) {
+            specialEdition = 'Club Rosebud';
+            name = name.replace(/ - CLUB ROSEBUD/, '');
+          }
           const id = generateSlug(name);
           const sessions = [];
           const poster = $2('.media-object').attr('src').split('?')[0];
@@ -380,6 +392,7 @@ export class CinemaService {
           const movie: MovieBasic = {
             id,
             name,
+            specialEdition,
             synopsis,
             duration,
             durationReadable,

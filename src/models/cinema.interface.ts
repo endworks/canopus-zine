@@ -17,6 +17,7 @@ export interface Cinema extends BaseCinema {
 export interface MovieBasic {
   id: string;
   name: string;
+  specialEdition?: string;
   sessions: Session[];
   synopsis?: string;
   duration?: number;
