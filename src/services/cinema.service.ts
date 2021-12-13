@@ -288,9 +288,7 @@ export class CinemaService {
         );
 
         const resp = {
-          id,
-          ...cinemas[id],
-          lastUpdated: new Date().toISOString(),
+          ...cinema,
           movies: movies,
         };
         await this.cacheManager.set(`cinema/${id}`, resp, {
@@ -319,6 +317,7 @@ export class CinemaService {
 
   async updateAll(): Promise<ErrorResponse> {
     try {
+      await this.cacheManager.reset();
       const cinemas = await this.getCinemas();
       if ('statusCode' in cinemas) return;
       await Promise.all(
