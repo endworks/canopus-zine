@@ -10,7 +10,7 @@ import { ttlCache } from './utils';
     HttpModule,
     CacheModule.register({
       ttl: ttlCache,
-      max: 128,
+      max: 256,
     }),
   ],
   controllers: [CinemaController],
