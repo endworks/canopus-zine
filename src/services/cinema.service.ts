@@ -325,9 +325,12 @@ export class CinemaService {
           await this.getCinema(cinema.id);
         }),
       );
+      const keys = await this.cacheManager.store.keys();
       return {
         statusCode: HttpStatus.OK,
-        message: `All movies are updated`,
+        message: `All movie data is updated and deleted following caches: ['${keys.join(
+          "', '",
+        )}']`,
       };
     } catch (exception) {
       throw new InternalServerErrorException(
