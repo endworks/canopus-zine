@@ -266,7 +266,9 @@ export class CinemaService {
                 movieDB.runtime || movie.duration,
               ),
               tagline: movieDB.tagline,
-              poster: `${config.images.secure_base_url}w342${movieDB.poster_path}`,
+              poster: movieDB.poster_path
+                ? `${config.images.secure_base_url}w342${movieDB.poster_path}`
+                : movie.poster,
               synopsis: movieDB.overview,
               trailer: trailer || movie.trailer || null,
               director: director || null,
