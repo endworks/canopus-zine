@@ -21,6 +21,5 @@ export const generateSlug = (title: string): string => {
   return sanitizeTitle(title).replace(/\s/gm, '-');
 };
 
-export const cacheTTL = 60 * 60 * 12; // 12 hours
-export const cacheTTLDaily = 60 * 60 * 24; // 24 hours
+export const cacheTTL = 60 * 60 * 6;
 export const cacheMaxSize = 256;
