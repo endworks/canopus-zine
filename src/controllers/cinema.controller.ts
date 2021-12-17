@@ -33,6 +33,14 @@ export class CinemaController {
     });
   }
 
+  @MessagePattern('cached', Transport.TCP)
+  async cached() {
+    return this.cinemaService.cached().catch((ex) => {
+      this.logger.error(ex.message);
+      return ex.response;
+    });
+  }
+
   @MessagePattern('updateAll', Transport.TCP)
   async updateAll() {
     return this.cinemaService.updateAll().catch((ex) => {

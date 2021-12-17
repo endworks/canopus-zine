@@ -16,7 +16,7 @@ import {
   MovieBasic,
   Movie,
   Session,
-  UpdateCache,
+  CacheData,
 } from 'src/models/cinema.interface';
 import { ErrorResponse } from '../models/common.interface';
 import { cinemas } from 'src/data/cinemas';
@@ -316,7 +316,27 @@ export class CinemaService {
     }
   }
 
-  async updateAll(): Promise<UpdateCache> {
+  async cached(): Promise<CacheData> {
+    try {
+      const keys = await this.cacheManager.store.keys();
+      const caches = keys.sort();
+      return {
+        statusCode: HttpStatus.OK,
+        message: `Currently cached data`,
+        caches,
+      };
+    } catch (exception) {
+      throw new InternalServerErrorException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          message: exception.message,
+        },
+        exception.message,
+      );
+    }
+  }
+
+  async updateAll(): Promise<CacheData> {
     try {
       await this.cacheManager.reset();
       const cinemas = await this.getCinemas();
@@ -327,10 +347,11 @@ export class CinemaService {
         }),
       );
       const keys = await this.cacheManager.store.keys();
+      const caches = keys.sort();
       return {
         statusCode: HttpStatus.OK,
-        message: `Movie data in caches is updated`,
-        cachesUpdated: keys.sort((a, b) => a < b),
+        message: `Movie data is updated and cached`,
+        caches,
       };
     } catch (exception) {
       throw new InternalServerErrorException(

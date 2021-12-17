@@ -75,6 +75,6 @@ export interface CinemaDetailsBasic extends Cinema {
   movies: MovieBasic[];
 }
 
-export interface UpdateCache extends ErrorResponse {
-  cachesUpdated: string[];
+export interface CacheData extends ErrorResponse {
+  caches: string[];
 }
