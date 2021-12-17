@@ -329,8 +329,8 @@ export class CinemaService {
       const keys = await this.cacheManager.store.keys();
       return {
         statusCode: HttpStatus.OK,
-        message: `All movie data is updated and deleted caches`,
-        caches: keys.sort((a, b) => a < b),
+        message: `Movie data in caches is updated`,
+        cachesUpdated: keys.sort((a, b) => a < b),
       };
     } catch (exception) {
       throw new InternalServerErrorException(

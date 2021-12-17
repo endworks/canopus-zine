@@ -76,5 +76,5 @@ export interface CinemaDetailsBasic extends Cinema {
 }
 
 export interface UpdateCache extends ErrorResponse {
-  caches: string[];
+  cachesUpdated: string[];
 }
