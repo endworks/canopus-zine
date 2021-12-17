@@ -22,13 +22,7 @@ import { ErrorResponse } from '../models/common.interface';
 import { cinemas } from 'src/data/cinemas';
 import { lastValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
-import {
-  minutesToString,
-  sanitizeTitle,
-  ttlCacheDaily,
-  ttlCache,
-  generateSlug,
-} from 'src/utils';
+import { minutesToString, sanitizeTitle, generateSlug } from 'src/utils';
 import { TheMovieDBService } from './themoviedb.service';
 import {
   TheMovieDBMovie,
@@ -54,7 +48,7 @@ export class CinemaService {
         ...cinemas[id],
       };
     });
-    await this.cacheManager.set('cinema', resp, { ttl: ttlCacheDaily });
+    await this.cacheManager.set('cinema', resp);
     return resp;
   }
 
@@ -100,9 +94,7 @@ export class CinemaService {
           lastUpdated: new Date().toISOString(),
           movies: movies,
         };
-        await this.cacheManager.set(`cinema/${id}/basic`, resp, {
-          ttl: ttlCache,
-        });
+        await this.cacheManager.set(`cinema/${id}/basic`, resp);
         return resp;
       } catch (exception) {
         throw new InternalServerErrorException(
@@ -292,9 +284,7 @@ export class CinemaService {
           ...cinema,
           movies: movies,
         };
-        await this.cacheManager.set(`cinema/${id}`, resp, {
-          ttl: ttlCache,
-        });
+        await this.cacheManager.set(`cinema/${id}`, resp);
         return resp;
       } catch (exception) {
         throw new InternalServerErrorException(
