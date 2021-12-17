@@ -313,13 +313,11 @@ export class CinemaService {
     }
   }
 
-  async cached(): Promise<CacheData> {
+  async cached(): Promise<CacheData | ErrorResponse> {
     try {
       const keys = await this.cacheManager.store.keys();
       const caches = keys.sort();
       return {
-        statusCode: HttpStatus.OK,
-        message: `Currently cached data`,
         cacheSize: `${caches.length}/${cacheMaxSize}`,
         caches,
       };
@@ -334,7 +332,7 @@ export class CinemaService {
     }
   }
 
-  async updateAll(): Promise<CacheData> {
+  async updateAll(): Promise<CacheData | ErrorResponse> {
     try {
       await this.cacheManager.reset();
       const cinemas = await this.getCinemas();
@@ -347,8 +345,6 @@ export class CinemaService {
       const keys = await this.cacheManager.store.keys();
       const caches = keys.sort();
       return {
-        statusCode: HttpStatus.OK,
-        message: `Movie data is updated and cached`,
         cacheSize: `${caches.length}/${cacheMaxSize}`,
         caches,
       };
