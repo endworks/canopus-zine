@@ -22,7 +22,12 @@ import { ErrorResponse } from '../models/common.interface';
 import { cinemas } from 'src/data/cinemas';
 import { lastValueFrom } from 'rxjs';
 import * as cheerio from 'cheerio';
-import { minutesToString, sanitizeTitle, generateSlug } from 'src/utils';
+import {
+  minutesToString,
+  sanitizeTitle,
+  generateSlug,
+  cacheMaxSize,
+} from 'src/utils';
 import { TheMovieDBService } from './themoviedb.service';
 import {
   TheMovieDBMovie,
@@ -313,8 +318,8 @@ export class CinemaService {
       return {
         statusCode: HttpStatus.OK,
         message: `Currently cached data`,
+        cacheSize: `${caches.length}/${cacheMaxSize}`,
         caches,
-        cachesLength: caches.length,
       };
     } catch (exception) {
       throw new InternalServerErrorException(
@@ -342,8 +347,8 @@ export class CinemaService {
       return {
         statusCode: HttpStatus.OK,
         message: `Movie data is updated and cached`,
+        cacheSize: `${caches.length}/${cacheMaxSize}`,
         caches,
-        cachesLength: caches.length,
       };
     } catch (exception) {
       throw new InternalServerErrorException(
