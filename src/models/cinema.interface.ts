@@ -1,5 +1,3 @@
-import { ErrorResponse } from './common.interface';
-
 export interface BaseCinema {
   name: string;
   address?: string;
