@@ -16,6 +16,7 @@ import {
   MovieBasic,
   Movie,
   Session,
+  UpdateCache,
 } from 'src/models/cinema.interface';
 import { ErrorResponse } from '../models/common.interface';
 import { cinemas } from 'src/data/cinemas';
@@ -315,7 +316,7 @@ export class CinemaService {
     }
   }
 
-  async updateAll(): Promise<ErrorResponse> {
+  async updateAll(): Promise<UpdateCache> {
     try {
       await this.cacheManager.reset();
       const cinemas = await this.getCinemas();
@@ -328,9 +329,8 @@ export class CinemaService {
       const keys = await this.cacheManager.store.keys();
       return {
         statusCode: HttpStatus.OK,
-        message: `All movie data is updated and deleted following caches: ['${keys.join(
-          "', '",
-        )}']`,
+        message: `All movie data is updated and deleted caches`,
+        caches: keys.sort((a, b) => a - b),
       };
     } catch (exception) {
       throw new InternalServerErrorException(

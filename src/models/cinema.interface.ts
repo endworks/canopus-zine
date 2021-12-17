@@ -1,3 +1,5 @@
+import { ErrorResponse } from './common.interface';
+
 export interface BaseCinema {
   name: string;
   address?: string;
@@ -71,4 +73,8 @@ export interface CinemaDetails extends Cinema {
 export interface CinemaDetailsBasic extends Cinema {
   lastUpdated: string;
   movies: MovieBasic[];
+}
+
+export interface UpdateCache extends ErrorResponse {
+  caches: string[];
 }
