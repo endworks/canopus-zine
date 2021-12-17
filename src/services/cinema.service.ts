@@ -330,7 +330,7 @@ export class CinemaService {
       return {
         statusCode: HttpStatus.OK,
         message: `All movie data is updated and deleted caches`,
-        caches: keys.sort((a, b) => a - b),
+        caches: keys.sort((a, b) => a < b),
       };
     } catch (exception) {
       throw new InternalServerErrorException(
