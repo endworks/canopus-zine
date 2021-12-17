@@ -314,6 +314,7 @@ export class CinemaService {
         statusCode: HttpStatus.OK,
         message: `Currently cached data`,
         caches,
+        cachesLength: caches.length,
       };
     } catch (exception) {
       throw new InternalServerErrorException(
@@ -342,6 +343,7 @@ export class CinemaService {
         statusCode: HttpStatus.OK,
         message: `Movie data is updated and cached`,
         caches,
+        cachesLength: caches.length,
       };
     } catch (exception) {
       throw new InternalServerErrorException(
