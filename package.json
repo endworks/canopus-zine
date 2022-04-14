@@ -1,19 +1,19 @@
 {
   "name": "canopus-zine",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Cinema microservice no one asked for",
   "author": {
     "name": "ender-null",
     "email": "endernull@icloud.com",
     "url": "https://github.com/ender-null"
   },
-  "homepage": "https://github.com/drkcat/canopus-zine",
+  "homepage": "https://github.com/endworks/canopus-zine",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/drkcat/canopus-zine.git"
+    "url": "git+ssh://git@github.com/endworks/canopus-zine.git"
   },
   "bugs": {
-    "url": "https://github.com/drkcat/canopus-zine/issues"
+    "url": "https://github.com/endworks/canopus-zine/issues"
   },
   "license": "MIT",
   "scripts": {
