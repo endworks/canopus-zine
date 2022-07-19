@@ -1,10 +1,10 @@
 {
   "name": "canopus-zine",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Cinema microservice no one asked for",
   "author": {
     "name": "ender-null",
-    "email": "endernull@icloud.com",
+    "email": "ender@end.works",
     "url": "https://github.com/ender-null"
   },
   "homepage": "https://github.com/endworks/canopus-zine",
