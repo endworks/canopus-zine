@@ -339,7 +339,13 @@ export class CinemaService {
       if ('statusCode' in cinemas) return;
       await Promise.all(
         cinemas.map(async (cinema) => {
-          await this.getCinema(cinema.id);
+          try {
+            await this.getCinema(cinema.id);
+          } catch (exceptionCinema) {
+            this.logger.error(
+              `'getCinema(${cinema.id})' failed with exception: '${exceptionCinema.message}'`,
+            );
+          }
         }),
       );
       const keys = await this.cacheManager.store.keys();
