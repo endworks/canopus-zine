@@ -341,7 +341,7 @@ export class CinemaService {
         cinemas.map(async (cinema) => {
           await this.getCinema(cinema.id).catch((exceptionCinema) => {
             this.logger.error(
-              `'getCinema(${cinema.id})' failed with exception: '${exceptionCinema.message}'`,
+              `failed to get movies from '${cinema.id}' with exception: '${exceptionCinema.message}'`,
             );
           });
         }),
