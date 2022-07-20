@@ -22,7 +22,6 @@ jobs:
   # See also https://docs.docker.com/docker-hub/builds/automated-testing/
   test:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
 
@@ -46,6 +45,8 @@ jobs:
     needs: test
 
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     if: github.event_name == 'push'
 
     steps:

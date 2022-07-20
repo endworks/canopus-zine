@@ -12,7 +12,7 @@ COPY . .
 RUN yarn run build
 
 FROM node:alpine AS production
-LABEL org.opencontainers.image.source https://github.com/drkcat/canopus-zine
+LABEL org.opencontainers.image.source https://github.com/endworks/canopus-zine
 
 WORKDIR /usr/src/app
 
