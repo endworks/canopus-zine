@@ -100,4 +100,4 @@ jobs:
             docker pull ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
             docker stop ${{ env.IMAGE_NAME }}
             docker rm ${{ env.IMAGE_NAME }}
-            docker run --network canopus -p 8878:8878/tcp -e THE_MOVIE_DB_API_KEY='${{ secrets.THE_MOVIE_DB_API_KEY }}' -ti -d --restart unless-stopped --name ${{ env.IMAGE_NAME }} ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+            docker run --network canopus -p 8878:3000/tcp -e THE_MOVIE_DB_API_KEY='${{ secrets.THE_MOVIE_DB_API_KEY }}' -ti -d --restart unless-stopped --name ${{ env.IMAGE_NAME }} ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
